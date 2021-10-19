@@ -6,7 +6,10 @@ import Queen from "./pieces/queen.js";
 import King from "./pieces/king.js";
 import Empty from "./pieces/empty.js";
 
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // globale variabler
+/////////////////////////////////////////////////////////////////////////////////////////
 let picked = false;
 let pickedNumber;
 
@@ -23,38 +26,6 @@ this.Board = [
     new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false),
     new Rook(false), new Knight(false), new Bishop(false), new Queen(false), new King(false), new Bishop(false), new Knight(false), new Rook(false)
 ];
-
-// tror der er et problem når vi skal kalde tilbage fra funktionerne!!
-
-function mouseLeave(cell){
-    if (!picked || pickedNumber != cell.id){
-        cell.className = cell.title;
-        
-    }
-}
-
-function mouseEnter(cell){
-    //console.log("you hovered " + cell.id)
-    if (!picked || pickedNumber != cell.id){
-        // her skal den tjekke om brikken der står på feltet er ens egen og om der står en brik
-        cell.className = "legal";
-    } else{
-        //checkmove
-    }
-}
-
-function onClick(cell){
-    console.log("you clicked " + cell.id)
-    
-    if (!picked){
-        picked = true;
-        pickedNumber = cell.id;
-        cell.className ="selected";
-    } else if (picked && (pickedNumber == cell.id)){
-        picked = false;
-        cell.className = cell.title
-    }
-}
 
 function drawBoard(){
     var body = document.getElementsByTagName("body")[0]
@@ -97,3 +68,36 @@ function drawBoard(){
 
 
 
+////////////////////////////////////////////////////////////////////////////////////
+/// funtioner til input events
+////////////////////////////////////////////////////////////////////////////////////
+
+function mouseLeave(cell){
+    if (!picked || pickedNumber != cell.id){
+        cell.className = cell.title;
+        
+    }
+}
+
+function mouseEnter(cell){
+    //console.log("you hovered " + cell.id)
+    if (!picked || pickedNumber != cell.id){
+        // her skal den tjekke om brikken der står på feltet er ens egen og om der står en brik
+        cell.className = "legal";
+    } else{
+        //checkmove
+    }
+}
+
+function onClick(cell){
+    console.log("you clicked " + cell.id)
+    
+    if (!picked){
+        picked = true;
+        pickedNumber = cell.id;
+        cell.className ="selected";
+    } else if (picked && (pickedNumber == cell.id)){
+        picked = false;
+        cell.className = cell.title
+    }
+}
