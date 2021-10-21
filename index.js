@@ -20,9 +20,8 @@ let game = new Game;
 let player1 = new Player(true);
 let player2 = new Player(false);
 
-// måske er det nemmere med et todimensionelt array, ellers skal jeg i hvert fald tjekke at man ikke "ryger udover brættet"
-
-let BoardNys = [   
+/*
+let Board = [   
     [new Rook(true), new Knight(true), new Bishop(true), new King(true), new Queen(true), new Bishop(true), new Knight(true), new Rook(true)],
     [new Pawn(true), new Pawn(true), new Pawn(true), new Pawn(true), new Pawn(true), new Pawn(true), new Pawn(true), new Pawn(true)],
     [new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true)],
@@ -32,19 +31,19 @@ let BoardNys = [
     [new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false)],
     [new Rook(false), new Knight(false), new Bishop(false), new Queen(false), new King(false), new Bishop(false), new Knight(false), new Rook(false)]
 ];
-
-
+*/
 
 let Board = [   
-    new Rook(true), new Knight(true), new Bishop(true), new King(true), new Queen(true), new Bishop(true), new Knight(true), new Rook(true),
-    new Pawn(true), new Pawn(true), new Pawn(true), new Pawn(true), new Pawn(true), new Pawn(true), new Pawn(true), new Pawn(true),
-    new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true),
-    new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true),
-    new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true),
-    new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true),
-    new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false),
-    new Rook(false), new Knight(false), new Bishop(false), new Queen(false), new King(false), new Bishop(false), new Knight(false), new Rook(false)
+    [new Rook(true), new Pawn(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Pawn(false), new Rook(false)],
+    [new Knight(true), new Pawn(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Pawn(false),new Knight(false)],
+    [new Bishop(true), new Pawn(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Pawn(false),new Bishop(false)],
+    [new King(true), new Pawn(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Pawn(false), new Queen(false)],
+    [new Queen(true), new Pawn(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Pawn(false), new King(false)],
+    [new Bishop(true), new Pawn(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Pawn(false), new Bishop(false)],
+    [new Knight(true), new Pawn(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Pawn(false), new Knight(false)],
+    [new Rook(true), new Pawn(true), new Empty(true), new Empty(true), new Empty(true), new Empty(true), new Pawn(false), new Rook(false)]
 ];
+
 
 ////////////////////////////////////////////////////////////
 //EVENTS
@@ -56,25 +55,50 @@ function mouseLeave(cell){
 }
 function mouseEnter(cell){
     //console.log("you hovered " + cell.id)
-    if (!game.Picked || game.PickedNumber != cell.id){
-        // her skal den tjekke om brikken der står på feltet er ens egen og om der står en brik
-        cell.className = "legal";
-    } else{
-        //checkmove
-    }
+    let destinationX = cell.id%8;
+    let destinationY = Math.floor(cell.id/8);            
+
+    let originX = game.PickedNumber%8;
+    let originY = Math.floor(game.PickedNumber/8);            
+
+    if (!game.Picked){
+        if(game.WhitesTurn == Board[destinationX][destinationY].IsWhite || Board[destinationX][destinationY].Name == "Empty"){
+            cell.className = "legal";
+        }else{
+            cell.className = "illegal";             
+            }
+        }else{
+            if (game.WhitesTurn != Board[destinationX][destinationY].IsWhite || Board[destinationX][destinationY].Name == "Empty"){
+                // tjek om træk er lovligt, hvis ja: legal
+                if (Board[originX][originY].CheckMove(originX,originY,destinationX,destinationY,Board)){
+                    cell.className = "legal";
+                }else{
+                    cell.className = "illegal";             
+                    }   
+            }else{
+                cell.className = "illegal";             
+                }   
+        }
 }
+
 function onClick(cell){
     console.log("you clicked " + cell.id)
-    
-    if (!game.Picked){
+
+    let destinationX = cell.id%8;
+    let destinationY = Math.floor(cell.id/8);            
+
+
+    if (!game.Picked && (game.WhitesTurn == Board[destinationX][destinationY].IsWhite) && Board[destinationX][destinationY].Name !== "Empty"){
         game.Picked = true;
         game.PickedNumber = cell.id;
         cell.className ="selected";
     } else if (game.Picked){
         if (game.PickedNumber != cell.id){
-            console.log('her');
-            move(game.PickedNumber,cell.id,Board);
-            // grafik
+
+            let originX = game.PickedNumber%8;
+            let originY = Math.floor(game.PickedNumber/8);            
+
+            move(originX,originY,destinationX,destinationY,Board);
         } else{
             cell.className = cell.title
             game.Picked = false;
@@ -82,16 +106,13 @@ function onClick(cell){
     }
 }
 
-
 function drawBoard(){
     
     // ved ikke om denne metode er god til at slette indholdet:
     // der sker et ryk første gang en brik fjernes. det har måske noget med størrelserne på cellerne at gøre 
     document.getElementsByTagName('BODY')[0].innerHTML = '';
 
-
     let body = document.getElementsByTagName("body")[0]
-
     let tbl = document.createElement("table");
     let tblBody = document.createElement("tbody");
 
@@ -103,9 +124,11 @@ function drawBoard(){
         for (let x = 0; x < 8;x++){
             
             let cell = document.createElement("td");
-                        
-            cell.innerHTML = Board[y*8+x].Symbol;
+            
+            console.log(`${y} ${x} ${Board[x][y].Symbol}`)
+            cell.innerHTML = Board[x][y].Symbol;
  
+            //byttet om i forhold til før pga. array
             cell.id = y*8+x;
 
             cell.addEventListener("click", function(){onClick(this)});
@@ -132,26 +155,34 @@ function start(){
     drawBoard();
 }
 
-function move(origin,destination){
-    
+function move(originX,originY,destinationX,destinationY){
+    console.log(`${originX} ${originY} ${destinationX} ${destinationY}`);
     if (game.Picked){
-        console.log(Board[origin].CheckMove(origin,destination,Board));
-        if (Board[origin].CheckMove(origin,destination,Board)){
+        console.log("her"); 
+        if (Board[originX][originY].CheckMove(originX,originY,destinationX,destinationY,Board)){
             console.log('move');
-            if (Board[origin].IsWhite != Board[destination].white || Board[destination].Name == 'Empty')
+            if (Board[originX][originY].IsWhite != Board[destinationX][destinationY].IsWhite || Board[destinationX][destinationY].Name == 'Empty')
 
-            Board[origin].Moved = true;
+            // brikken er nu markeret som flyttet
+            Board[originX][originY].Moved = true;
 
-            let temp = Board[destination];
+            let temp = Board[destinationX][destinationY];
 
-            Board[destination] = Board[origin];
 
-            if (Board[destination].Name == 'Empty'){
-                Board[origin] = temp;
+            if (Board[destinationY][destinationX].Name == 'Empty'){
+                //flyt brikken.
+                Board[destinationX][destinationY] = Board[originX][originY];
+                //Board[originX][originY] = temp;
+                Board[originX][originY] = new Empty(true);
             } else{
-                Board[origin] = new Empty(true);
+                // slå en brik
+                Board[destinationX][destinationY] = Board[originX][originY];
+                Board[originX][originY] = new Empty(true);
             }
-            
+            // der mangler specieltilfældet med castling, hvor konge og tårn bytter plads
+
+            // måske skal der også gives point
+
             drawBoard();
             game.turn();
 
