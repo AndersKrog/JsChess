@@ -7,25 +7,32 @@ export default class Pawn extends Piece{
         this.Value = 1;
         this.Symbol = isWhite? "\u2659": "\u265F";    
     }
-    CheckMove (origin,destination,board){
-        let direction = board[origin].IsWhite? -1: 1;
+    CheckMove (originX, originY,destinationX,destinationY,board){
+        let direction = board[originX][originY].IsWhite? -1: 1;
         
-        console.log(origin - destination );
-        console.log(direction);
+        //console.log(originY - destinationY);
+        //console.log(originY - destinationY == 2*direction);
 
-        // hvis det er første træk
-        if (origin - destination == 16*direction && board[destination].Name == 'Empty'){
-            if (!board[origin].Moved){
+        if (originX == destinationX){
+            if (originY - destinationY == 2*direction && board[destinationX][destinationY].Name == 'Empty'){
+                if (!board[originX][originY].Moved){
+                    return true;
+                // så skal brikken markeres som rykket, men det kan jeg ikke gøre herfra, med den nuværende strukur!! da jeg ikke kan ændre boardet her
+                // pt gøres det fra move() i index.js
+                // alternativt skal jeg tjekke om bonden står på en bestemt række i forhold til spillerens farve, da det er enste mulighed for dette træk
+                }
+            } // ellers ryk normalt
+            else if ((originY - destinationY == direction) && board[destinationX][destinationY].Name == 'Empty'){   
                 return true;
-            // TODO så skal brikken markeres som rykket, men det kan jeg ikke gøre herfra, med den nuværende strukur!! da jeg ikke kan ændre boardet her
-            // alternativt skal jeg tjekke om bonden står på en bestemt række i forhold til spillerens farve, da det er enste mulighed for dette træk
+            } else{
+                return false;
             }
-        } // ellers ryk normalt
-        else if ((origin - destination == 8*direction) && board[destination].Name == 'Empty'){   
+            // slå brik
+        }else if (Math.abs(originX - destinationX) == 1 && originY - destinationY == direction
+        && board[destinationX][destinationY].Name != 'Empty' && board[originX][originY].IsWhite != board[destinationX][destinationY].IsWhite){
             return true;
-        } else{
+        }else{
             return false;
         }
-        
     }
 }
